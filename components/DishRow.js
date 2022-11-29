@@ -2,10 +2,28 @@ import { View, Text, TouchableOpacity, Image } from "react-native"
 import Currency from "react-currency-formatter"
 import { urlFor } from "../sanity"
 import React, { useState, useEffect } from "react"
+import { useDispatch, useSelector } from "react-redux"
 import { Ionicons } from "@expo/vector-icons"
+import {
+  addToBasket,
+  removeFromBasket,
+  selectBasketItems,
+  selectBasketItemsWithId,
+} from "../features/basketSlice"
 
 const DishRow = ({ id, name, description, price, image }) => {
   const [isPressed, setIsPressed] = useState(false)
+  const items = useSelector((state) => selectBasketItemsWithId(state, id))
+  const dispatch = useDispatch()
+
+  const addItemToBasket = () => {
+    dispatch(addToBasket({ id, name, description, price, image }))
+  }
+
+  const removeItemFromBasket = () => {
+    if (!items.length > 0) return
+    dispatch(removeFromBasket({ id }))
+  }
   return (
     <>
       <TouchableOpacity
@@ -39,11 +57,18 @@ const DishRow = ({ id, name, description, price, image }) => {
       {isPressed && (
         <View className="bg-white px-4">
           <View className="flex-row items-center space-x-2 pb-3">
-            <TouchableOpacity>
-              <Ionicons name="ios-remove-circle" size={24} color="#00CCBB" />
+            <TouchableOpacity
+              disabled={!items.length}
+              onPress={removeItemFromBasket}
+            >
+              <Ionicons
+                name="ios-remove-circle"
+                size={24}
+                color={items.length > 0 ? "#00CCBB" : "gray"}
+              />
             </TouchableOpacity>
-            <Text>0</Text>
-            <TouchableOpacity>
+            <Text>{items.length}</Text>
+            <TouchableOpacity onPress={addItemToBasket}>
               <Ionicons name="ios-add-circle" size={24} color="#00CCBB" />
             </TouchableOpacity>
           </View>
